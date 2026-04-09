@@ -1,0 +1,12 @@
+#file-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  row-gap: 30px;
+  justify-items: center;
+}
+
+@media (max-width: 576px) {
+  #file-container {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}

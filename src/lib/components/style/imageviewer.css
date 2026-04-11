@@ -7,7 +7,6 @@
   backdrop-filter: blur(5px);
   z-index: 9998;
 }
-
 #image-viewport {
   position: absolute;
   display: flex;
@@ -41,17 +40,28 @@
   max-width: 100%;
   max-height: 100%;
 }
-.btn {
+#viewer-container .tools-hidden {
+  opacity: 0;
+}
+#viewer-container .tools-hidden:hover {
+  opacity: 0;
+}
+#viewer-container .viewer-tools {
+  cursor: pointer;
+  transition: all;
+  transition-duration: 0.2s;
+}
+#viewer-container .btn {
   background-color: rgba(255, 255, 255, 0.5);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   color: white;
 }
-.btn:hover {
+#viewer-container .btn:hover {
   background-color: rgba(200, 200, 200, 0.5);
   color: black;
 }
-.btn:active {
+#viewer-container .btn:active {
   background-color: rgba(200, 200, 200, 1);
 }
 
@@ -64,7 +74,7 @@
   z-index: 9999;
 }
 
-.btn-slider {
+#viewer-container .btn-slider {
   position: absolute;
   display: flex;
   align-items: center;
@@ -76,7 +86,7 @@
   transition: all;
   transition-duration: 0.2s;
 }
-.btn-slider:hover {
+#viewer-container .btn-slider:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
 

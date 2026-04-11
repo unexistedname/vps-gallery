@@ -6,6 +6,7 @@
     isFolder = false,
     title = "Unknown ddwdwwd dddd",
     img = "https://picsum.photos/200/300",
+    onclick
   } = $props();
 
   onMount(() => {
@@ -25,7 +26,9 @@
   }
 </script>
 
-<div class="card pt-2">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="card pt-2" onclick={onclick}>
 <!-- Card Icon -->
   <div
     class="card-img-container position-relative d-flex justify-content-center align-items-center"

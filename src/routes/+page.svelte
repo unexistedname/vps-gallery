@@ -1,6 +1,12 @@
 <script>
   import FileContent from "../lib/components/FileContent.svelte";
   import ImageViewer from "$lib/components/ImageViewer.svelte";
+
+  let imageVieverVisibility = $state(false);
+
+  function viewerHandle() {
+    imageVieverVisibility = true;
+  }
 </script>
 
 <main class="container">
@@ -28,7 +34,7 @@
     </div>
   </div>
 
-  <FileContent />
+  <FileContent on:open = {viewerHandle}/>
 
   <footer class="text-white text-center">
     <p>© 2026-2999 unexistedname. All Rights Reserved.</p>
@@ -36,4 +42,8 @@
   </footer>
 </main>
 
-<ImageViewer />
+{#if imageVieverVisibility}
+<ImageViewer
+  on:close = {() => imageVieverVisibility = false}
+/>
+{/if}

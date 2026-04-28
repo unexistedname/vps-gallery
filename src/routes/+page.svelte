@@ -1,12 +1,14 @@
 <script>
   import FileContent from "../lib/components/FileContent.svelte";
   import ImageViewer from "$lib/components/ImageViewer.svelte";
+  import { onMount } from "svelte";
 
   let imageVieverVisibility = $state(false);
 
   function viewerHandle() {
     imageVieverVisibility = true;
   }
+
 </script>
 
 <main class="container">

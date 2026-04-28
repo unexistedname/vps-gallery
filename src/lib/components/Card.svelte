@@ -3,7 +3,7 @@
   import "./style/card.css";
 
   let {
-    isFolder = false,
+    isFolder = true,
     title = "Unknown ddwdwwd dddd",
     img = "https://picsum.photos/200/300",
     onclick
@@ -17,6 +17,9 @@
       return new bootstrap.Tooltip(tooltipTriggerEl);
     });
   });
+  function download() {
+    // TODO
+  }
 
   function confirmDelete() {
     confirm(`Delete ${title}?`);
@@ -38,7 +41,7 @@
       type="button"
       aria-label="Delete"
       class="position-absolute btn btn-delete"
-      onclick={confirmDelete}
+      onclick={(e) => e.stopPropagation(confirmDelete())}
     >
       <i class="bi bi-x"></i>
     </button>
@@ -57,10 +60,10 @@
       {title}
     </p>
     <div class="btn-group">
-        <button type="button" aria-label="Rename" class="btn btn-primary" onclick={confirmRename}>
+        <button type="button" aria-label="Rename" class="btn btn-primary" onclick={(e) => e.stopPropagation(confirmRename())}>
             <i class="bi bi-pencil-square"></i>
         </button>
-        <button type="button" aria-label="Download" class="btn btn-success">
+        <button type="button" aria-label="Download" class="btn btn-success" onclick={(e) => e.stopPropagation(download())}>
             <i class="bi bi-download"></i>
         </button>
     </div>

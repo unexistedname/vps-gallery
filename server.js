@@ -23,7 +23,22 @@ app.get("/api/files", (req, res) => {
     .filter(
       (i) => i.isDirectory() || /\.(jpg|jpeg|png|gif|webp)$/i.test(i.name),
     )
-    .map((i) => ({ name: i.name, isDir: i.isDirectory() }));
+    .map((i) => {
+      let preview = null;
+      if (i.isDirectory()) {
+        try {
+          const subPath = path.join(target, i.name);
+          const subItems = fs.readdirSync(subPath, { withFileTypes: true });
+          const img = subItems.find(
+            (sub) =>
+              !sub.isDirectory() &&
+              /\.(jpg|jpeg|png|gif|webp)$/i.test(sub.name),
+          );
+          if (img) preview = img.name;
+        } catch (err) {}
+      }
+      return { name: i.name, isDir: i.isDirectory(), preview };
+    });
 
   files.sort((a, b) => {
     if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
@@ -32,7 +47,6 @@ app.get("/api/files", (req, res) => {
   res.json(files);
 });
 
-// Perbaikan: Menggunakan async/await agar tidak memblokir server saat upload ribuan file
 app.post("/api/upload", upload.array("files"), async (req, res) => {
   const paths = [].concat(req.body.paths || []);
   try {

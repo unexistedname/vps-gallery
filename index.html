@@ -15,8 +15,6 @@
                 overflow-x: hidden;
                 -webkit-tap-highlight-color: transparent;
             }
-
-            /* Toolbar lebih lega di mobile */
             .toolbar {
                 padding: 12px;
                 background: #1e1e1e;
@@ -29,8 +27,6 @@
                 align-items: center;
                 flex-wrap: wrap;
             }
-
-            /* Grid responsif: 2 kolom di HP kecil, banyak kolom di desktop */
             .gallery {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -44,7 +40,6 @@
                     padding: 8px;
                 }
             }
-
             .card {
                 background: #252525;
                 border-radius: 10px;
@@ -54,7 +49,9 @@
                 flex-direction: column;
                 border: 1px solid #333;
             }
+
             .card-thumb {
+                position: relative;
                 width: 100%;
                 height: 160px;
                 object-fit: cover;
@@ -64,9 +61,22 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 60px;
+                overflow: hidden;
+            }
+            .folder-preview {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                opacity: 0.4;
+            }
+            .folder-icon {
+                position: relative;
+                z-index: 2;
+                text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
             }
 
-            /* Judul lebih besar sedikit di mobile */
             .card-title {
                 font-size: 13px;
                 padding: 10px 8px;
@@ -76,7 +86,6 @@
                 text-overflow: ellipsis;
                 color: #ddd;
             }
-
             .card-actions {
                 display: flex;
                 justify-content: space-around;
@@ -84,8 +93,6 @@
                 background: #1a1a1a;
                 gap: 5px;
             }
-
-            /* Tombol lebih mudah ditekan (Mobile Friendly) */
             .btn {
                 background: #37474f;
                 color: #fff;
@@ -111,8 +118,6 @@
             .btn-danger {
                 background: #d32f2f;
             }
-
-            /* Image Viewer Mobile */
             #viewer {
                 display: none;
                 position: fixed;
@@ -130,15 +135,12 @@
                 pointer-events: none;
                 display: block;
             }
-
             .ui-container {
                 position: absolute;
                 inset: 0;
                 pointer-events: none;
                 z-index: 10;
             }
-
-            /* Panel bawah yang fleksibel */
             .ui-panel {
                 position: absolute;
                 bottom: 20px;
@@ -163,8 +165,6 @@
                 flex: unset;
                 min-width: 70px;
             }
-
-            /* Tombol tutup & counter diperbesar untuk jempol */
             .close-btn {
                 position: absolute;
                 top: 15px;
@@ -197,7 +197,6 @@
                 pointer-events: auto;
                 z-index: 20;
             }
-
             .hidden-ui {
                 opacity: 0 !important;
                 pointer-events: none !important;
@@ -211,8 +210,6 @@
                 cursor: pointer;
                 pointer-events: auto;
             }
-
-            /* Comic Mode */
             #comic-container {
                 display: none;
                 flex-direction: column;
@@ -236,8 +233,6 @@
             .mode-comic-active .viewer-counter {
                 display: none !important;
             }
-
-            /* Modal Unggah Responsif */
             #upload-modal {
                 display: none;
                 position: fixed;
@@ -258,8 +253,6 @@
                 text-align: center;
                 box-sizing: border-box;
             }
-
-            /* Input File agar tidak merusak toolbar */
             input[type="file"] {
                 font-size: 12px;
                 color: #888;
@@ -406,7 +399,10 @@
                         .map((f) => {
                             const pth = `${path ? path + "/" : ""}${f.name}`;
                             const thumb = f.isDir
-                                ? `<div class="card-thumb" onclick="load('${pth}')">📁</div>`
+                                ? `<div class="card-thumb" onclick="load('${pth}')">
+                 ${f.preview ? `<img class="folder-preview" src="/gallery/${pth}/${f.preview}" loading="lazy">` : ""}
+                 <div class="folder-icon">📁</div>
+               </div>`
                                 : `<img class="card-thumb" src="/gallery/${pth}" loading="lazy" onclick="openV('${pth}')">`;
                             return `<div class="card">${thumb}<div class="card-title" title="${f.name}">${f.name}</div><div class="card-actions"><button class="btn" onclick="act('delete', '${pth}')">Del</button><button class="btn" onclick="rename('${pth}')">Ren</button><button class="btn btn-primary" onclick="window.location.href='/api/download?path=${pth}'">DL</button></div></div>`;
                         })

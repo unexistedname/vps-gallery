@@ -82,6 +82,7 @@
     .btn-danger:hover {
         background: #b71c1c;
     }
+
     #viewer {
         display: none;
         position: fixed;
@@ -96,6 +97,7 @@
         max-height: 100%;
         object-fit: contain;
         pointer-events: none;
+        display: block;
     }
     .ui-container {
         position: absolute;
@@ -141,6 +143,29 @@
     .close-btn:hover {
         background: rgba(255, 0, 0, 0.6);
     }
+
+    /* Indikator Baru */
+    .viewer-counter {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        color: #fff;
+        border: 1px solid #444;
+        pointer-events: auto;
+        z-index: 20;
+    }
+    .viewer-loader {
+        position: absolute;
+        font-size: 18px;
+        color: #ffeb3b;
+        font-weight: bold;
+        z-index: 15;
+    }
+
     .hidden-ui {
         opacity: 0 !important;
         pointer-events: none !important;
@@ -154,6 +179,7 @@
         cursor: pointer;
         pointer-events: auto;
     }
+
     .mode-orig {
         object-fit: none !important;
         max-width: none !important;
@@ -174,6 +200,7 @@
         width: 100% !important;
         height: 100% !important;
     }
+
     #comic-container {
         display: none;
         flex-direction: column;
@@ -193,9 +220,11 @@
     .mode-comic-active #comic-container {
         display: flex !important;
     }
-    .mode-comic-active .nav-area {
+    .mode-comic-active .nav-area,
+    .mode-comic-active .viewer-counter {
         display: none !important;
     }
+
     #upload-modal {
         display: none;
         position: fixed;
@@ -214,16 +243,23 @@
         text-align: center;
     }
 </style>
+
 <div class="toolbar">
     <button class="btn" onclick="goBack()">Back</button>
     <button class="btn btn-primary" onclick="newFolder()">+ New Folder</button>
     <input type="file" multiple onchange="upload(this)" />
     <input type="file" webkitdirectory onchange="upload(this)" />
 </div>
+
 <div id="app"></div>
+
 <div id="viewer" onclick="toggleUI(event)">
+    <div id="viewer-loader" class="viewer-loader" style="display: none">
+        Loading Image...
+    </div>
+    <div id="viewer-counter" class="viewer-counter ui-element"></div>
     <div id="comic-container"></div>
-    <img id="img" />
+    <img id="img" onload="onImageLoad()" />
     <div class="ui-container">
         <button class="close-btn ui-element" onclick="closeV(event)">×</button>
         <div class="ui-panel ui-element">
@@ -239,6 +275,7 @@
         <div class="nav-area" style="right: 0" onclick="next(event)"></div>
     </div>
 </div>
+
 <div id="upload-modal">
     <div class="upload-box">
         <div style="margin-bottom: 10px; font-weight: bold">Uploading...</div>
@@ -263,12 +300,14 @@
         </button>
     </div>
 </div>
+
 <script>
     let path = "",
         imgs = [],
         idx = 0,
         abortCtrl = null;
     window.onpopstate = (e) => load(e.state?.path || "", false);
+
     async function load(p, push = true) {
         path = p.replace(/^\/+/, "");
         if (push && location.search !== `?path=${path}`)
@@ -278,7 +317,7 @@
                 path ? `?path=${path}` : location.pathname,
             );
         document.getElementById("app").innerHTML =
-            '<div style="padding:20px; text-align:center;">Loading...</div>';
+            '<div style="padding:20px; text-align:center;">Loading Folder...</div>';
         const res = await fetch(`/api/files?path=${path}`);
         const files = await res.json();
         imgs = files
@@ -297,10 +336,12 @@
                 .join("") +
             "</div>";
     }
+
     function goBack() {
         if (path === "") return;
         history.back();
     }
+
     async function newFolder() {
         const name = prompt("Folder name:");
         if (name) {
@@ -312,6 +353,7 @@
             load(path, false);
         }
     }
+
     async function upload(el) {
         const filesArr = Array.from(el.files);
         const total = filesArr.length;
@@ -357,9 +399,11 @@
         el.value = "";
         load(path, false);
     }
+
     function cancelUpload() {
         if (abortCtrl) abortCtrl.abort();
     }
+
     async function act(action, target, newName = "") {
         if (action === "delete" && !confirm("Delete this?")) return;
         await fetch("/api/action", {
@@ -369,40 +413,61 @@
         });
         load(path, false);
     }
+
     function rename(target) {
         const n = prompt("New name:");
         if (n) act("rename", target, n);
     }
+
     function openV(src) {
         const v = document.getElementById("viewer");
         v.style.display = "flex";
         v.classList.remove("mode-comic-active");
         idx = imgs.indexOf(src);
-        document.getElementById("img").src = `/gallery/${src}`;
+        updateViewer();
         document
             .querySelectorAll(".ui-element")
             .forEach((el) => el.classList.remove("hidden-ui"));
     }
+
+    function updateViewer() {
+        const loader = document.getElementById("viewer-loader");
+        const counter = document.getElementById("viewer-counter");
+        const img = document.getElementById("img");
+
+        loader.style.display = "block";
+        img.style.opacity = "0"; // Sembunyikan gambar lama selama loading
+        img.src = `/gallery/${imgs[idx]}`;
+        counter.innerText = `${idx + 1} / ${imgs.length}`;
+    }
+
+    function onImageLoad() {
+        document.getElementById("viewer-loader").style.display = "none";
+        document.getElementById("img").style.opacity = "1";
+    }
+
     function closeV(e) {
         if (e) e.stopPropagation();
         const v = document.getElementById("viewer");
         v.style.display = "none";
-        v.classList.remove("mode-comic-active");
         document.getElementById("img").src = "";
         document.getElementById("comic-container").innerHTML = "";
     }
+
     function next(e) {
         e.stopPropagation();
         if (imgs.length === 0) return;
         idx = (idx + 1) % imgs.length;
-        document.getElementById("img").src = `/gallery/${imgs[idx]}`;
+        updateViewer();
     }
+
     function prev(e) {
         e.stopPropagation();
         if (imgs.length === 0) return;
         idx = (idx - 1 + imgs.length) % imgs.length;
-        document.getElementById("img").src = `/gallery/${imgs[idx]}`;
+        updateViewer();
     }
+
     function mode(m, e) {
         if (e) e.stopPropagation();
         const v = document.getElementById("viewer");
@@ -418,10 +483,12 @@
             document.getElementById("img").className = `mode-${m}`;
         }
     }
+
     function toggleUI(e) {
         document
             .querySelectorAll(".ui-element")
             .forEach((el) => el.classList.toggle("hidden-ui"));
     }
+
     load(new URLSearchParams(window.location.search).get("path") || "");
 </script>

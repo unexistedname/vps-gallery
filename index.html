@@ -76,6 +76,12 @@
     .btn-primary {
         background: #0d47a1;
     }
+    .btn-danger {
+        background: #d32f2f;
+    }
+    .btn-danger:hover {
+        background: #b71c1c;
+    }
     #viewer {
         display: none;
         position: fixed;
@@ -190,15 +196,29 @@
     .mode-comic-active .nav-area {
         display: none !important;
     }
+    #upload-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 50;
+        align-items: center;
+        justify-content: center;
+    }
+    .upload-box {
+        background: #1e1e1e;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #444;
+        width: 300px;
+        text-align: center;
+    }
 </style>
 <div class="toolbar">
     <button class="btn" onclick="goBack()">Back</button>
     <button class="btn btn-primary" onclick="newFolder()">+ New Folder</button>
     <input type="file" multiple onchange="upload(this)" />
     <input type="file" webkitdirectory onchange="upload(this)" />
-    <div id="loading" style="display: none; color: #ffeb3b; font-weight: bold">
-        Processing...
-    </div>
 </div>
 <div id="app"></div>
 <div id="viewer" onclick="toggleUI(event)">
@@ -219,10 +239,35 @@
         <div class="nav-area" style="right: 0" onclick="next(event)"></div>
     </div>
 </div>
+<div id="upload-modal">
+    <div class="upload-box">
+        <div style="margin-bottom: 10px; font-weight: bold">Uploading...</div>
+        <div id="upload-progress" style="margin-bottom: 5px; color: #ffeb3b">
+            0 / 0
+        </div>
+        <div
+            id="upload-filename"
+            style="
+                font-size: 12px;
+                color: #bbb;
+                margin-bottom: 15px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            "
+        >
+            Preparing files...
+        </div>
+        <button class="btn btn-danger" onclick="cancelUpload()">
+            Cancel Upload
+        </button>
+    </div>
+</div>
 <script>
     let path = "",
         imgs = [],
-        idx = 0;
+        idx = 0,
+        abortCtrl = null;
     window.onpopstate = (e) => load(e.state?.path || "", false);
     async function load(p, push = true) {
         path = p.replace(/^\/+/, "");
@@ -232,6 +277,8 @@
                 "",
                 path ? `?path=${path}` : location.pathname,
             );
+        document.getElementById("app").innerHTML =
+            '<div style="padding:20px; text-align:center;">Loading...</div>';
         const res = await fetch(`/api/files?path=${path}`);
         const files = await res.json();
         imgs = files
@@ -269,13 +316,21 @@
         const filesArr = Array.from(el.files);
         const total = filesArr.length;
         if (total === 0) return;
-        const loadingDiv = document.getElementById("loading");
-        loadingDiv.style.display = "block";
+        const modal = document.getElementById("upload-modal");
+        const progTxt = document.getElementById("upload-progress");
+        const fileTxt = document.getElementById("upload-filename");
+        modal.style.display = "flex";
+        progTxt.innerText = `0 / ${total}`;
+        fileTxt.innerText = "Preparing...";
+        abortCtrl = new AbortController();
         let processed = 0;
-        loadingDiv.innerText = `Processing... 0 dari ${total}`;
-        const chunkSize = 50;
+        const chunkSize = 10;
         for (let i = 0; i < total; i += chunkSize) {
+            if (abortCtrl.signal.aborted) break;
             const chunk = filesArr.slice(i, i + chunkSize);
+            fileTxt.innerText =
+                chunk[0].name +
+                (chunk.length > 1 ? ` (+${chunk.length - 1} lainnya)` : "");
             const fd = new FormData();
             for (let f of chunk) {
                 fd.append("files", f);
@@ -285,18 +340,25 @@
                 await fetch(`/api/upload?path=${path}`, {
                     method: "POST",
                     body: fd,
+                    signal: abortCtrl.signal,
                 });
+                processed += chunk.length;
+                progTxt.innerText = `${processed} / ${total}`;
             } catch (err) {
+                if (err.name === "AbortError") {
+                    fileTxt.innerText = "Dibatalkan oleh pengguna";
+                    break;
+                }
                 console.error(err);
             }
-            processed += chunk.length;
-            loadingDiv.innerText = `Processing... ${processed} dari ${total}`;
             await new Promise((r) => setTimeout(r, 100));
         }
-        loadingDiv.style.display = "none";
-        loadingDiv.innerText = "Processing...";
+        modal.style.display = "none";
         el.value = "";
         load(path, false);
+    }
+    function cancelUpload() {
+        if (abortCtrl) abortCtrl.abort();
     }
     async function act(action, target, newName = "") {
         if (action === "delete" && !confirm("Delete this?")) return;

@@ -79,9 +79,6 @@
     .btn-danger {
         background: #d32f2f;
     }
-    .btn-danger:hover {
-        background: #b71c1c;
-    }
 
     #viewer {
         display: none;
@@ -298,6 +295,7 @@
     window.onpopstate = (e) => load(e.state?.path || "", false);
 
     async function load(p, push = true) {
+        window.stop(); // PENTING: Memaksa browser berhenti mendownload gambar lama agar fetch folder baru lancar
         path = p.replace(/^\/+/, "");
         if (push && location.search !== `?path=${path}`)
             history.pushState(
@@ -305,9 +303,11 @@
                 "",
                 path ? `?path=${path}` : location.pathname,
             );
-        document.getElementById("app").innerHTML = ""; // Kosongkan layar agar tidak stuck
+
+        document.getElementById("app").innerHTML = "";
         const res = await fetch(`/api/files?path=${path}`);
         const files = await res.json();
+
         imgs = files
             .filter((f) => !f.isDir)
             .map((f) => `${path ? path + "/" : ""}${f.name}`);
@@ -330,18 +330,6 @@
         history.back();
     }
 
-    async function newFolder() {
-        const name = prompt("Folder name:");
-        if (name) {
-            await fetch("/api/mkdir", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ path, name }),
-            });
-            load(path, false);
-        }
-    }
-
     async function upload(el) {
         const filesArr = Array.from(el.files);
         const total = filesArr.length;
@@ -351,7 +339,6 @@
         const fileTxt = document.getElementById("upload-filename");
         modal.style.display = "flex";
         progTxt.innerText = `0 / ${total}`;
-        fileTxt.innerText = "Preparing...";
         abortCtrl = new AbortController();
         let processed = 0;
         const chunkSize = 10;
@@ -375,13 +362,10 @@
                 processed += chunk.length;
                 progTxt.innerText = `${processed} / ${total}`;
             } catch (err) {
-                if (err.name === "AbortError") {
-                    fileTxt.innerText = "Dibatalkan oleh pengguna";
-                    break;
-                }
+                if (err.name === "AbortError") break;
                 console.error(err);
             }
-            await new Promise((r) => setTimeout(r, 100));
+            await new Promise((r) => setTimeout(r, 50));
         }
         modal.style.display = "none";
         el.value = "";
@@ -405,6 +389,18 @@
     function rename(target) {
         const n = prompt("New name:");
         if (n) act("rename", target, n);
+    }
+
+    async function newFolder() {
+        const name = prompt("Folder name:");
+        if (name) {
+            await fetch("/api/mkdir", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path, name }),
+            });
+            load(path, false);
+        }
     }
 
     function openV(src) {

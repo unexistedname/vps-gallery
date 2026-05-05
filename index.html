@@ -1,468 +1,563 @@
 <!doctype html>
-<style>
-    body {
-        margin: 0;
-        font-family: sans-serif;
-        background: #121212;
-        color: #e0e0e0;
-        overflow-x: hidden;
-    }
-    .toolbar {
-        padding: 10px;
-        background: #1e1e1e;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    .gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 15px;
-        padding: 15px;
-    }
-    .card {
-        background: #252525;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
-        border: 1px solid #333;
-    }
-    .card-thumb {
-        width: 100%;
-        height: 140px;
-        object-fit: cover;
-        cursor: pointer;
-        background: #333;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 50px;
-    }
-    .card-title {
-        font-size: 12px;
-        padding: 8px;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: #bbb;
-    }
-    .card-actions {
-        display: flex;
-        justify-content: space-around;
-        padding: 5px;
-        background: #1a1a1a;
-    }
-    .btn {
-        background: #37474f;
-        color: #fff;
-        border: none;
-        padding: 6px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-        transition: 0.2s;
-    }
-    .btn:hover {
-        background: #455a64;
-    }
-    .btn-primary {
-        background: #0d47a1;
-    }
-    .btn-danger {
-        background: #d32f2f;
-    }
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <style>
+            body {
+                margin: 0;
+                font-family: sans-serif;
+                background: #121212;
+                color: #e0e0e0;
+                overflow-x: hidden;
+                -webkit-tap-highlight-color: transparent;
+            }
 
-    #viewer {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: #000;
-        z-index: 9;
-        align-items: center;
-        justify-content: center;
-    }
-    #img {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        pointer-events: none;
-        display: block;
-    }
-    .ui-container {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 10;
-    }
-    .ui-panel {
-        position: absolute;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(30, 30, 30, 0.9);
-        padding: 10px 20px;
-        border-radius: 30px;
-        display: flex;
-        gap: 10px;
-        pointer-events: auto;
-        transition: opacity 0.3s;
-        border: 1px solid #444;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .close-btn {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        pointer-events: auto;
-        font-size: 24px;
-        border: none;
-        color: #fff;
-        transition: 0.3s;
-        z-index: 20;
-    }
-    .close-btn:hover {
-        background: rgba(255, 0, 0, 0.6);
-    }
+            /* Toolbar lebih lega di mobile */
+            .toolbar {
+                padding: 12px;
+                background: #1e1e1e;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                position: sticky;
+                top: 0;
+                z-index: 5;
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
 
-    .viewer-counter {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.6);
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 14px;
-        color: #fff;
-        border: 1px solid #444;
-        pointer-events: auto;
-        z-index: 20;
-    }
+            /* Grid responsif: 2 kolom di HP kecil, banyak kolom di desktop */
+            .gallery {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+                padding: 12px;
+            }
+            @media (max-width: 480px) {
+                .gallery {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    padding: 8px;
+                }
+            }
 
-    .hidden-ui {
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
-    .nav-area {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 30%;
-        z-index: 11;
-        cursor: pointer;
-        pointer-events: auto;
-    }
+            .card {
+                background: #252525;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+                display: flex;
+                flex-direction: column;
+                border: 1px solid #333;
+            }
+            .card-thumb {
+                width: 100%;
+                height: 160px;
+                object-fit: cover;
+                cursor: pointer;
+                background: #333;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 60px;
+            }
 
-    .mode-orig {
-        object-fit: none !important;
-        max-width: none !important;
-        max-height: none !important;
-    }
-    .mode-height {
-        height: 100% !important;
-        width: auto !important;
-        max-width: none !important;
-    }
-    .mode-width {
-        width: 100% !important;
-        height: auto !important;
-        max-height: none !important;
-    }
-    .mode-screen {
-        object-fit: fill !important;
-        width: 100% !important;
-        height: 100% !important;
-    }
-
-    #comic-container {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-        align-items: center;
-    }
-    #comic-container img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-    }
-    .mode-comic-active #img {
-        display: none !important;
-    }
-    .mode-comic-active #comic-container {
-        display: flex !important;
-    }
-    .mode-comic-active .nav-area,
-    .mode-comic-active .viewer-counter {
-        display: none !important;
-    }
-
-    #upload-modal {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 50;
-        align-items: center;
-        justify-content: center;
-    }
-    .upload-box {
-        background: #1e1e1e;
-        padding: 20px;
-        border-radius: 10px;
-        border: 1px solid #444;
-        width: 300px;
-        text-align: center;
-    }
-</style>
-
-<div class="toolbar">
-    <button class="btn" onclick="goBack()">Back</button>
-    <button class="btn btn-primary" onclick="newFolder()">+ New Folder</button>
-    <input type="file" multiple onchange="upload(this)" />
-    <input type="file" webkitdirectory onchange="upload(this)" />
-</div>
-
-<div id="app"></div>
-
-<div id="viewer" onclick="toggleUI(event)">
-    <div id="viewer-counter" class="viewer-counter ui-element"></div>
-    <div id="comic-container"></div>
-    <img id="img" />
-    <div class="ui-container">
-        <button class="close-btn ui-element" onclick="closeV(event)">×</button>
-        <div class="ui-panel ui-element">
-            <button class="btn" onclick="mode('orig', event)">Original</button>
-            <button class="btn" onclick="mode('height', event)">Fit H</button>
-            <button class="btn" onclick="mode('width', event)">Fit W</button>
-            <button class="btn" onclick="mode('screen', event)">Fit S</button>
-            <button class="btn btn-primary" onclick="mode('comic', event)">
-                Comic
-            </button>
-        </div>
-        <div class="nav-area" style="left: 0" onclick="prev(event)"></div>
-        <div class="nav-area" style="right: 0" onclick="next(event)"></div>
-    </div>
-</div>
-
-<div id="upload-modal">
-    <div class="upload-box">
-        <div style="margin-bottom: 10px; font-weight: bold">Uploading...</div>
-        <div id="upload-progress" style="margin-bottom: 5px; color: #ffeb3b">
-            0 / 0
-        </div>
-        <div
-            id="upload-filename"
-            style="
-                font-size: 12px;
-                color: #bbb;
-                margin-bottom: 15px;
+            /* Judul lebih besar sedikit di mobile */
+            .card-title {
+                font-size: 13px;
+                padding: 10px 8px;
+                text-align: center;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-            "
-        >
-            Preparing files...
+                color: #ddd;
+            }
+
+            .card-actions {
+                display: flex;
+                justify-content: space-around;
+                padding: 8px;
+                background: #1a1a1a;
+                gap: 5px;
+            }
+
+            /* Tombol lebih mudah ditekan (Mobile Friendly) */
+            .btn {
+                background: #37474f;
+                color: #fff;
+                border: none;
+                padding: 10px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+                transition: 0.2s;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 40px;
+            }
+            .btn:active {
+                background: #4f6b78;
+                transform: scale(0.95);
+            }
+            .btn-primary {
+                background: #0d47a1;
+            }
+            .btn-danger {
+                background: #d32f2f;
+            }
+
+            /* Image Viewer Mobile */
+            #viewer {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: #000;
+                z-index: 9;
+                align-items: center;
+                justify-content: center;
+                touch-action: none;
+            }
+            #img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                pointer-events: none;
+                display: block;
+            }
+
+            .ui-container {
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                z-index: 10;
+            }
+
+            /* Panel bawah yang fleksibel */
+            .ui-panel {
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(30, 30, 30, 0.95);
+                padding: 12px;
+                border-radius: 20px;
+                display: flex;
+                gap: 8px;
+                pointer-events: auto;
+                transition: opacity 0.3s;
+                border: 1px solid #444;
+                flex-wrap: wrap;
+                justify-content: center;
+                width: 90%;
+                max-width: 400px;
+            }
+            .ui-panel .btn {
+                padding: 8px;
+                min-height: 35px;
+                flex: unset;
+                min-width: 70px;
+            }
+
+            /* Tombol tutup & counter diperbesar untuk jempol */
+            .close-btn {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                pointer-events: auto;
+                font-size: 28px;
+                border: none;
+                color: #fff;
+                transition: 0.3s;
+                z-index: 20;
+            }
+            .viewer-counter {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 8px 16px;
+                border-radius: 25px;
+                font-size: 15px;
+                color: #fff;
+                border: 1px solid #444;
+                pointer-events: auto;
+                z-index: 20;
+            }
+
+            .hidden-ui {
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+            .nav-area {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 30%;
+                z-index: 11;
+                cursor: pointer;
+                pointer-events: auto;
+            }
+
+            /* Comic Mode */
+            #comic-container {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                align-items: center;
+            }
+            #comic-container img {
+                width: 100%;
+                height: auto;
+                display: block;
+            }
+            .mode-comic-active #img {
+                display: none !important;
+            }
+            .mode-comic-active #comic-container {
+                display: flex !important;
+            }
+            .mode-comic-active .nav-area,
+            .mode-comic-active .viewer-counter {
+                display: none !important;
+            }
+
+            /* Modal Unggah Responsif */
+            #upload-modal {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.85);
+                z-index: 50;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .upload-box {
+                background: #1e1e1e;
+                padding: 25px;
+                border-radius: 15px;
+                border: 1px solid #444;
+                width: 100%;
+                max-width: 320px;
+                text-align: center;
+                box-sizing: border-box;
+            }
+
+            /* Input File agar tidak merusak toolbar */
+            input[type="file"] {
+                font-size: 12px;
+                color: #888;
+                max-width: 150px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="toolbar">
+            <button
+                class="btn"
+                style="flex: none; width: 60px"
+                onclick="goBack()"
+            >
+                Back
+            </button>
+            <button
+                class="btn btn-primary"
+                style="flex: none"
+                onclick="newFolder()"
+            >
+                + Folder
+            </button>
+            <input type="file" multiple onchange="upload(this)" />
+            <input type="file" webkitdirectory onchange="upload(this)" />
         </div>
-        <button class="btn btn-danger" onclick="cancelUpload()">
-            Cancel Upload
-        </button>
-    </div>
-</div>
 
-<script>
-    let path = "",
-        imgs = [],
-        idx = 0,
-        abortCtrl = null;
-    window.onpopstate = (e) => load(e.state?.path || "", false);
+        <div id="app"></div>
 
-    async function load(p, push = true) {
-        window.stop(); // PENTING: Memaksa browser berhenti mendownload gambar lama agar fetch folder baru lancar
-        path = p.replace(/^\/+/, "");
-        if (push && location.search !== `?path=${path}`)
-            history.pushState(
-                { path },
-                "",
-                path ? `?path=${path}` : location.pathname,
-            );
+        <div id="viewer" onclick="toggleUI(event)">
+            <div id="viewer-counter" class="viewer-counter ui-element"></div>
+            <div id="comic-container"></div>
+            <img id="img" />
+            <div class="ui-container">
+                <button class="close-btn ui-element" onclick="closeV(event)">
+                    ×
+                </button>
+                <div class="ui-panel ui-element">
+                    <button class="btn" onclick="mode('orig', event)">
+                        Orig
+                    </button>
+                    <button class="btn" onclick="mode('height', event)">
+                        Fit H
+                    </button>
+                    <button class="btn" onclick="mode('width', event)">
+                        Fit W
+                    </button>
+                    <button class="btn" onclick="mode('screen', event)">
+                        Fit S
+                    </button>
+                    <button
+                        class="btn btn-primary"
+                        onclick="mode('comic', event)"
+                    >
+                        Comic
+                    </button>
+                </div>
+                <div
+                    class="nav-area"
+                    style="left: 0"
+                    onclick="prev(event)"
+                ></div>
+                <div
+                    class="nav-area"
+                    style="right: 0"
+                    onclick="next(event)"
+                ></div>
+            </div>
+        </div>
 
-        document.getElementById("app").innerHTML = "";
-        const res = await fetch(`/api/files?path=${path}`);
-        const files = await res.json();
+        <div id="upload-modal">
+            <div class="upload-box">
+                <div
+                    style="
+                        margin-bottom: 15px;
+                        font-weight: bold;
+                        font-size: 18px;
+                    "
+                >
+                    Uploading...
+                </div>
+                <div
+                    id="upload-progress"
+                    style="
+                        margin-bottom: 10px;
+                        color: #ffeb3b;
+                        font-size: 20px;
+                        font-weight: bold;
+                    "
+                >
+                    0 / 0
+                </div>
+                <div
+                    id="upload-filename"
+                    style="
+                        font-size: 12px;
+                        color: #bbb;
+                        margin-bottom: 20px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    "
+                >
+                    Menyiapkan berkas...
+                </div>
+                <button
+                    class="btn btn-danger"
+                    style="width: 100%"
+                    onclick="cancelUpload()"
+                >
+                    Cancel Upload
+                </button>
+            </div>
+        </div>
 
-        imgs = files
-            .filter((f) => !f.isDir)
-            .map((f) => `${path ? path + "/" : ""}${f.name}`);
-        document.getElementById("app").innerHTML =
-            '<div class="gallery">' +
-            files
-                .map((f) => {
-                    const pth = `${path ? path + "/" : ""}${f.name}`;
-                    const thumb = f.isDir
-                        ? `<div class="card-thumb" onclick="load('${pth}')">📁</div>`
-                        : `<img class="card-thumb" src="/gallery/${pth}" loading="lazy" onclick="openV('${pth}')">`;
-                    return `<div class="card">${thumb}<div class="card-title" title="${f.name}">${f.name}</div><div class="card-actions"><button class="btn" onclick="act('delete', '${pth}')">Del</button><button class="btn" onclick="rename('${pth}')">Ren</button><button class="btn" onclick="window.location.href='/api/download?path=${pth}'">DL</button></div></div>`;
-                })
-                .join("") +
-            "</div>";
-    }
+        <script>
+            let path = "",
+                imgs = [],
+                idx = 0,
+                abortCtrl = null;
+            window.onpopstate = (e) => load(e.state?.path || "", false);
 
-    function goBack() {
-        if (path === "") return;
-        history.back();
-    }
+            async function load(p, push = true) {
+                window.stop();
+                path = p.replace(/^\/+/, "");
+                if (push && location.search !== `?path=${path}`)
+                    history.pushState(
+                        { path },
+                        "",
+                        path ? `?path=${path}` : location.pathname,
+                    );
 
-    async function upload(el) {
-        const filesArr = Array.from(el.files);
-        const total = filesArr.length;
-        if (total === 0) return;
-        const modal = document.getElementById("upload-modal");
-        const progTxt = document.getElementById("upload-progress");
-        const fileTxt = document.getElementById("upload-filename");
-        modal.style.display = "flex";
-        progTxt.innerText = `0 / ${total}`;
-        abortCtrl = new AbortController();
-        let processed = 0;
-        const chunkSize = 10;
-        for (let i = 0; i < total; i += chunkSize) {
-            if (abortCtrl.signal.aborted) break;
-            const chunk = filesArr.slice(i, i + chunkSize);
-            fileTxt.innerText =
-                chunk[0].name +
-                (chunk.length > 1 ? ` (+${chunk.length - 1} lainnya)` : "");
-            const fd = new FormData();
-            for (let f of chunk) {
-                fd.append("files", f);
-                fd.append("paths", f.webkitRelativePath || f.name);
+                document.getElementById("app").innerHTML =
+                    '<div style="padding:40px; text-align:center; color:#888;">Memuat...</div>';
+                const res = await fetch(`/api/files?path=${path}`);
+                const files = await res.json();
+
+                imgs = files
+                    .filter((f) => !f.isDir)
+                    .map((f) => `${path ? path + "/" : ""}${f.name}`);
+                document.getElementById("app").innerHTML =
+                    '<div class="gallery">' +
+                    files
+                        .map((f) => {
+                            const pth = `${path ? path + "/" : ""}${f.name}`;
+                            const thumb = f.isDir
+                                ? `<div class="card-thumb" onclick="load('${pth}')">📁</div>`
+                                : `<img class="card-thumb" src="/gallery/${pth}" loading="lazy" onclick="openV('${pth}')">`;
+                            return `<div class="card">${thumb}<div class="card-title" title="${f.name}">${f.name}</div><div class="card-actions"><button class="btn" onclick="act('delete', '${pth}')">Del</button><button class="btn" onclick="rename('${pth}')">Ren</button><button class="btn btn-primary" onclick="window.location.href='/api/download?path=${pth}'">DL</button></div></div>`;
+                        })
+                        .join("") +
+                    "</div>";
             }
-            try {
-                await fetch(`/api/upload?path=${path}`, {
+
+            function goBack() {
+                if (path === "") return;
+                history.back();
+            }
+
+            async function upload(el) {
+                const filesArr = Array.from(el.files);
+                const total = filesArr.length;
+                if (total === 0) return;
+                const modal = document.getElementById("upload-modal");
+                const progTxt = document.getElementById("upload-progress");
+                const fileTxt = document.getElementById("upload-filename");
+                modal.style.display = "flex";
+                progTxt.innerText = `0 / ${total}`;
+                abortCtrl = new AbortController();
+                let processed = 0;
+                const chunkSize = 10;
+                for (let i = 0; i < total; i += chunkSize) {
+                    if (abortCtrl.signal.aborted) break;
+                    const chunk = filesArr.slice(i, i + chunkSize);
+                    fileTxt.innerText =
+                        chunk[0].name +
+                        (chunk.length > 1 ? ` (+${chunk.length - 1})` : "");
+                    const fd = new FormData();
+                    for (let f of chunk) {
+                        fd.append("files", f);
+                        fd.append("paths", f.webkitRelativePath || f.name);
+                    }
+                    try {
+                        await fetch(`/api/upload?path=${path}`, {
+                            method: "POST",
+                            body: fd,
+                            signal: abortCtrl.signal,
+                        });
+                        processed += chunk.length;
+                        progTxt.innerText = `${processed} / ${total}`;
+                    } catch (err) {
+                        if (err.name === "AbortError") break;
+                        console.error(err);
+                    }
+                    await new Promise((r) => setTimeout(r, 50));
+                }
+                modal.style.display = "none";
+                el.value = "";
+                load(path, false);
+            }
+
+            function cancelUpload() {
+                if (abortCtrl) abortCtrl.abort();
+            }
+
+            async function act(action, target, newName = "") {
+                if (action === "delete" && !confirm("Hapus ini permanen?"))
+                    return;
+                await fetch("/api/action", {
                     method: "POST",
-                    body: fd,
-                    signal: abortCtrl.signal,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action, target, newName }),
                 });
-                processed += chunk.length;
-                progTxt.innerText = `${processed} / ${total}`;
-            } catch (err) {
-                if (err.name === "AbortError") break;
-                console.error(err);
+                load(path, false);
             }
-            await new Promise((r) => setTimeout(r, 50));
-        }
-        modal.style.display = "none";
-        el.value = "";
-        load(path, false);
-    }
 
-    function cancelUpload() {
-        if (abortCtrl) abortCtrl.abort();
-    }
+            function rename(target) {
+                const n = prompt("Nama baru:");
+                if (n) act("rename", target, n);
+            }
 
-    async function act(action, target, newName = "") {
-        if (action === "delete" && !confirm("Delete this?")) return;
-        await fetch("/api/action", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action, target, newName }),
-        });
-        load(path, false);
-    }
+            async function newFolder() {
+                const name = prompt("Nama folder baru:");
+                if (name) {
+                    await fetch("/api/mkdir", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ path, name }),
+                    });
+                    load(path, false);
+                }
+            }
 
-    function rename(target) {
-        const n = prompt("New name:");
-        if (n) act("rename", target, n);
-    }
+            function openV(src) {
+                const v = document.getElementById("viewer");
+                v.style.display = "flex";
+                v.classList.remove("mode-comic-active");
+                idx = imgs.indexOf(src);
+                document.getElementById("img").src = `/gallery/${src}`;
+                document.getElementById("viewer-counter").innerText =
+                    `${idx + 1} / ${imgs.length}`;
+                document
+                    .querySelectorAll(".ui-element")
+                    .forEach((el) => el.classList.remove("hidden-ui"));
+            }
 
-    async function newFolder() {
-        const name = prompt("Folder name:");
-        if (name) {
-            await fetch("/api/mkdir", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ path, name }),
-            });
-            load(path, false);
-        }
-    }
+            function closeV(e) {
+                if (e) e.stopPropagation();
+                const v = document.getElementById("viewer");
+                v.style.display = "none";
+                document.getElementById("img").src = "";
+                document.getElementById("comic-container").innerHTML = "";
+            }
 
-    function openV(src) {
-        const v = document.getElementById("viewer");
-        v.style.display = "flex";
-        v.classList.remove("mode-comic-active");
-        idx = imgs.indexOf(src);
-        document.getElementById("img").src = `/gallery/${src}`;
-        document.getElementById("viewer-counter").innerText =
-            `${idx + 1} / ${imgs.length}`;
-        document
-            .querySelectorAll(".ui-element")
-            .forEach((el) => el.classList.remove("hidden-ui"));
-    }
+            function next(e) {
+                e.stopPropagation();
+                if (imgs.length === 0) return;
+                idx = (idx + 1) % imgs.length;
+                document.getElementById("img").src = `/gallery/${imgs[idx]}`;
+                document.getElementById("viewer-counter").innerText =
+                    `${idx + 1} / ${imgs.length}`;
+            }
 
-    function closeV(e) {
-        if (e) e.stopPropagation();
-        const v = document.getElementById("viewer");
-        v.style.display = "none";
-        document.getElementById("img").src = "";
-        document.getElementById("comic-container").innerHTML = "";
-    }
+            function prev(e) {
+                e.stopPropagation();
+                if (imgs.length === 0) return;
+                idx = (idx - 1 + imgs.length) % imgs.length;
+                document.getElementById("img").src = `/gallery/${imgs[idx]}`;
+                document.getElementById("viewer-counter").innerText =
+                    `${idx + 1} / ${imgs.length}`;
+            }
 
-    function next(e) {
-        e.stopPropagation();
-        if (imgs.length === 0) return;
-        idx = (idx + 1) % imgs.length;
-        document.getElementById("img").src = `/gallery/${imgs[idx]}`;
-        document.getElementById("viewer-counter").innerText =
-            `${idx + 1} / ${imgs.length}`;
-    }
+            function mode(m, e) {
+                if (e) e.stopPropagation();
+                const v = document.getElementById("viewer");
+                const cc = document.getElementById("comic-container");
+                if (m === "comic") {
+                    v.classList.add("mode-comic-active");
+                    if (cc.innerHTML === "")
+                        cc.innerHTML = imgs
+                            .map(
+                                (src) =>
+                                    `<img src="/gallery/${src}" loading="lazy">`,
+                            )
+                            .join("");
+                } else {
+                    v.classList.remove("mode-comic-active");
+                    document.getElementById("img").className = `mode-${m}`;
+                }
+            }
 
-    function prev(e) {
-        e.stopPropagation();
-        if (imgs.length === 0) return;
-        idx = (idx - 1 + imgs.length) % imgs.length;
-        document.getElementById("img").src = `/gallery/${imgs[idx]}`;
-        document.getElementById("viewer-counter").innerText =
-            `${idx + 1} / ${imgs.length}`;
-    }
+            function toggleUI(e) {
+                document
+                    .querySelectorAll(".ui-element")
+                    .forEach((el) => el.classList.toggle("hidden-ui"));
+            }
 
-    function mode(m, e) {
-        if (e) e.stopPropagation();
-        const v = document.getElementById("viewer");
-        if (m === "comic") {
-            v.classList.add("mode-comic-active");
-            const cc = document.getElementById("comic-container");
-            if (cc.innerHTML === "")
-                cc.innerHTML = imgs
-                    .map((src) => `<img src="/gallery/${src}" loading="lazy">`)
-                    .join("");
-        } else {
-            v.classList.remove("mode-comic-active");
-            document.getElementById("img").className = `mode-${m}`;
-        }
-    }
-
-    function toggleUI(e) {
-        document
-            .querySelectorAll(".ui-element")
-            .forEach((el) => el.classList.toggle("hidden-ui"));
-    }
-
-    load(new URLSearchParams(window.location.search).get("path") || "");
-</script>
+            load(new URLSearchParams(window.location.search).get("path") || "");
+        </script>
+    </body>
+</html>

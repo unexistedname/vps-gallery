@@ -144,7 +144,6 @@
         background: rgba(255, 0, 0, 0.6);
     }
 
-    /* Indikator Baru */
     .viewer-counter {
         position: absolute;
         top: 20px;
@@ -157,13 +156,6 @@
         border: 1px solid #444;
         pointer-events: auto;
         z-index: 20;
-    }
-    .viewer-loader {
-        position: absolute;
-        font-size: 18px;
-        color: #ffeb3b;
-        font-weight: bold;
-        z-index: 15;
     }
 
     .hidden-ui {
@@ -254,12 +246,9 @@
 <div id="app"></div>
 
 <div id="viewer" onclick="toggleUI(event)">
-    <div id="viewer-loader" class="viewer-loader" style="display: none">
-        Loading Image...
-    </div>
     <div id="viewer-counter" class="viewer-counter ui-element"></div>
     <div id="comic-container"></div>
-    <img id="img" onload="onImageLoad()" />
+    <img id="img" />
     <div class="ui-container">
         <button class="close-btn ui-element" onclick="closeV(event)">×</button>
         <div class="ui-panel ui-element">
@@ -316,8 +305,7 @@
                 "",
                 path ? `?path=${path}` : location.pathname,
             );
-        document.getElementById("app").innerHTML =
-            '<div style="padding:20px; text-align:center;">Loading Folder...</div>';
+        document.getElementById("app").innerHTML = ""; // Kosongkan layar agar tidak stuck
         const res = await fetch(`/api/files?path=${path}`);
         const files = await res.json();
         imgs = files
@@ -424,26 +412,12 @@
         v.style.display = "flex";
         v.classList.remove("mode-comic-active");
         idx = imgs.indexOf(src);
-        updateViewer();
+        document.getElementById("img").src = `/gallery/${src}`;
+        document.getElementById("viewer-counter").innerText =
+            `${idx + 1} / ${imgs.length}`;
         document
             .querySelectorAll(".ui-element")
             .forEach((el) => el.classList.remove("hidden-ui"));
-    }
-
-    function updateViewer() {
-        const loader = document.getElementById("viewer-loader");
-        const counter = document.getElementById("viewer-counter");
-        const img = document.getElementById("img");
-
-        loader.style.display = "block";
-        img.style.opacity = "0"; // Sembunyikan gambar lama selama loading
-        img.src = `/gallery/${imgs[idx]}`;
-        counter.innerText = `${idx + 1} / ${imgs.length}`;
-    }
-
-    function onImageLoad() {
-        document.getElementById("viewer-loader").style.display = "none";
-        document.getElementById("img").style.opacity = "1";
     }
 
     function closeV(e) {
@@ -458,14 +432,18 @@
         e.stopPropagation();
         if (imgs.length === 0) return;
         idx = (idx + 1) % imgs.length;
-        updateViewer();
+        document.getElementById("img").src = `/gallery/${imgs[idx]}`;
+        document.getElementById("viewer-counter").innerText =
+            `${idx + 1} / ${imgs.length}`;
     }
 
     function prev(e) {
         e.stopPropagation();
         if (imgs.length === 0) return;
         idx = (idx - 1 + imgs.length) % imgs.length;
-        updateViewer();
+        document.getElementById("img").src = `/gallery/${imgs[idx]}`;
+        document.getElementById("viewer-counter").innerText =
+            `${idx + 1} / ${imgs.length}`;
     }
 
     function mode(m, e) {

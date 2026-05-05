@@ -110,6 +110,8 @@
         pointer-events: auto;
         transition: opacity 0.3s;
         border: 1px solid #444;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     .close-btn {
         position: absolute;
@@ -166,6 +168,28 @@
         width: 100% !important;
         height: 100% !important;
     }
+    #comic-container {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        align-items: center;
+    }
+    #comic-container img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+    .mode-comic-active #img {
+        display: none !important;
+    }
+    .mode-comic-active #comic-container {
+        display: flex !important;
+    }
+    .mode-comic-active .nav-area {
+        display: none !important;
+    }
 </style>
 <div class="toolbar">
     <button class="btn" onclick="goBack()">Back</button>
@@ -176,6 +200,7 @@
 </div>
 <div id="app"></div>
 <div id="viewer" onclick="toggleUI(event)">
+    <div id="comic-container"></div>
     <img id="img" />
     <div class="ui-container">
         <button class="close-btn ui-element" onclick="closeV(event)">×</button>
@@ -184,6 +209,9 @@
             <button class="btn" onclick="mode('height', event)">Fit H</button>
             <button class="btn" onclick="mode('width', event)">Fit W</button>
             <button class="btn" onclick="mode('screen', event)">Fit S</button>
+            <button class="btn btn-primary" onclick="mode('comic', event)">
+                Comic
+            </button>
         </div>
         <div class="nav-area" style="left: 0" onclick="prev(event)"></div>
         <div class="nav-area" style="right: 0" onclick="next(event)"></div>
@@ -262,6 +290,7 @@
     function openV(src) {
         const v = document.getElementById("viewer");
         v.style.display = "flex";
+        v.classList.remove("mode-comic-active");
         idx = imgs.indexOf(src);
         document.getElementById("img").src = `/gallery/${src}`;
         document
@@ -270,8 +299,11 @@
     }
     function closeV(e) {
         if (e) e.stopPropagation();
-        document.getElementById("viewer").style.display = "none";
+        const v = document.getElementById("viewer");
+        v.style.display = "none";
+        v.classList.remove("mode-comic-active");
         document.getElementById("img").src = "";
+        document.getElementById("comic-container").innerHTML = "";
     }
     function next(e) {
         e.stopPropagation();
@@ -287,7 +319,18 @@
     }
     function mode(m, e) {
         if (e) e.stopPropagation();
-        document.getElementById("img").className = `mode-${m}`;
+        const v = document.getElementById("viewer");
+        if (m === "comic") {
+            v.classList.add("mode-comic-active");
+            const cc = document.getElementById("comic-container");
+            if (cc.innerHTML === "")
+                cc.innerHTML = imgs
+                    .map((src) => `<img src="/gallery/${src}" loading="lazy">`)
+                    .join("");
+        } else {
+            v.classList.remove("mode-comic-active");
+            document.getElementById("img").className = `mode-${m}`;
+        }
     }
     function toggleUI(e) {
         document

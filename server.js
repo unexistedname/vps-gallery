@@ -3,14 +3,14 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const archiver = require("archiver");
+require('dotenv').config();
 
 const app = express();
-const baseDir = path.join(__dirname, "gallery");
+const baseDir = process.env.DIR;
 
 app.use(express.json());
 app.use("/", express.static(__dirname));
 app.use("/gallery", express.static(baseDir));
-
 const upload = multer({ dest: "temp/" });
 
 if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir);
@@ -74,4 +74,6 @@ app.post("/api/action", (req, res) => {
     );
   res.sendStatus(200);
 });
-app.listen(80, "0.0.0.0");
+app.listen(process.env.PORT, () => {
+  console.log(`Server berjalan di port ${process.env.PORT}`);
+});

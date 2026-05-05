@@ -196,7 +196,9 @@
     <button class="btn btn-primary" onclick="newFolder()">+ New Folder</button>
     <input type="file" multiple onchange="upload(this)" />
     <input type="file" webkitdirectory onchange="upload(this)" />
-    <div id="loading" style="display: none">Processing...</div>
+    <div id="loading" style="display: none; color: #ffeb3b; font-weight: bold">
+        Processing...
+    </div>
 </div>
 <div id="app"></div>
 <div id="viewer" onclick="toggleUI(event)">
@@ -264,14 +266,31 @@
         }
     }
     async function upload(el) {
-        document.getElementById("loading").style.display = "block";
-        const fd = new FormData();
-        for (let f of el.files) {
-            fd.append("files", f);
-            fd.append("paths", f.webkitRelativePath || f.name);
+        const filesArr = Array.from(el.files);
+        const total = filesArr.length;
+        if (total === 0) return;
+        const loadingDiv = document.getElementById("loading");
+        loadingDiv.style.display = "block";
+        let processed = 0;
+        loadingDiv.innerText = `Processing... 0 dari ${total}`;
+        const chunkSize = 10;
+        for (let i = 0; i < total; i += chunkSize) {
+            const chunk = filesArr.slice(i, i + chunkSize);
+            const fd = new FormData();
+            for (let f of chunk) {
+                fd.append("files", f);
+                fd.append("paths", f.webkitRelativePath || f.name);
+            }
+            await fetch(`/api/upload?path=${path}`, {
+                method: "POST",
+                body: fd,
+            });
+            processed += chunk.length;
+            loadingDiv.innerText = `Processing... ${processed} dari ${total}`;
         }
-        await fetch(`/api/upload?path=${path}`, { method: "POST", body: fd });
-        document.getElementById("loading").style.display = "none";
+        loadingDiv.style.display = "none";
+        loadingDiv.innerText = "Processing...";
+        el.value = "";
         load(path, false);
     }
     async function act(action, target, newName = "") {

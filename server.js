@@ -4,10 +4,8 @@ const path = require("path");
 const multer = require("multer");
 const archiver = require("archiver");
 require("dotenv").config();
-
 const app = express();
 const baseDir = process.env.DIR;
-
 app.use(express.json());
 app.use("/", express.static(__dirname));
 app.use("/gallery", express.static(baseDir));
@@ -28,17 +26,19 @@ app.get("/api/files", (req, res) => {
   });
   res.json(files);
 });
-app.post("/api/upload", upload.array("files"), (req, res) => {
+app.post("/api/upload", upload.array("files"), async (req, res) => {
   const paths = [].concat(req.body.paths || []);
-  req.files.forEach((f, i) => {
+  for (let i = 0; i < req.files.length; i++) {
+    const f = req.files[i];
     const target = path.join(
       baseDir,
       req.query.path || "",
       paths[i] || f.originalname,
     );
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.renameSync(f.path, target);
-  });
+    if (!fs.existsSync(path.dirname(target)))
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+    await fs.promises.rename(f.path, target);
+  }
   res.sendStatus(200);
 });
 app.post("/api/mkdir", (req, res) => {

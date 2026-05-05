@@ -273,7 +273,7 @@
         loadingDiv.style.display = "block";
         let processed = 0;
         loadingDiv.innerText = `Processing... 0 dari ${total}`;
-        const chunkSize = 10;
+        const chunkSize = 50;
         for (let i = 0; i < total; i += chunkSize) {
             const chunk = filesArr.slice(i, i + chunkSize);
             const fd = new FormData();
@@ -281,12 +281,17 @@
                 fd.append("files", f);
                 fd.append("paths", f.webkitRelativePath || f.name);
             }
-            await fetch(`/api/upload?path=${path}`, {
-                method: "POST",
-                body: fd,
-            });
+            try {
+                await fetch(`/api/upload?path=${path}`, {
+                    method: "POST",
+                    body: fd,
+                });
+            } catch (err) {
+                console.error(err);
+            }
             processed += chunk.length;
             loadingDiv.innerText = `Processing... ${processed} dari ${total}`;
+            await new Promise((r) => setTimeout(r, 100));
         }
         loadingDiv.style.display = "none";
         loadingDiv.innerText = "Processing...";
